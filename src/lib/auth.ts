@@ -7,6 +7,28 @@ import Resend from "next-auth/providers/resend";
 import { prisma } from "./prisma";
 import { siteUrl } from "./catalog";
 
+const emailAdapter: ReturnType<typeof PrismaAdapter> = {
+  ...PrismaAdapter(prisma),
+
+  createUser({ email, emailVerified, name, image }) {
+    return prisma.user.upsert({
+      where: { email },
+      create: { email, emailVerified, name, image },
+      update: { emailVerified },
+    });
+  },
+
+  async deleteSession(sessionToken) {
+    try {
+      return await prisma.session.delete({ where: { sessionToken } });
+    } catch (error) {
+      if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+        return null;
+      }
+      throw error;
+    }
+  },
+};
 const { AUTH_SECRET, AUTH_EMAIL_FROM, AUTH_RESEND_KEY, AUTH_SMTP_URL, DATABASE_URL } = process.env;
 
 export function validEmail(email: string): boolean {
