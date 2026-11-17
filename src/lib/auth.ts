@@ -115,7 +115,7 @@ const provider = getEmailProvider();
 export const emailProviderId = provider?.id;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  ...(provider ? { adapter: PrismaAdapter(prisma) } : {}),
+  ...(provider ? { adapter: emailAdapter } : {}),
   providers: provider ? [provider] : [],
   trustHost: Boolean(process.env.AUTH_URL || process.env.VERCEL) || process.env.NODE_ENV !== "production",
   session: { strategy: provider ? "database" : "jwt", maxAge: 30 * 24 * 60 * 60 },
